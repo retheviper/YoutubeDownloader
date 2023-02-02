@@ -33,7 +33,7 @@ compose.desktop {
     application {
         mainClass = "com.retheviper.youtube_downloader.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg)
             packageName = "youtube-downloader"
             packageVersion = "1.0.0"
         }

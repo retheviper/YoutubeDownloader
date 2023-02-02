@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A simple GUI application to download youtube videos
+A simple GUI application to download youtube videos (Mac only)
 
 ## Screenshot
 

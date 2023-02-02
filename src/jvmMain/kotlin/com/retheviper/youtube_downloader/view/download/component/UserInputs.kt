@@ -1,4 +1,4 @@
-package com.retheviper.youtube_downloader.view
+package com.retheviper.youtube_downloader.view.download.component
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,21 +10,17 @@ import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.retheviper.youtube_downloader.view.state.UserInputState
 
 @Composable
-fun Inputs(
-    downloadFolder: String,
-    downloadFolderChanged: (String) -> Unit,
-    url: String,
-    urlChanged: (String) -> Unit
-) {
+fun UserInput(userInputState: UserInputState) {
     Column(
         modifier = Modifier.padding(start = 10.dp, end = 10.dp)
     ) {
         Text("Download Path")
         TextField(
-            value = downloadFolder,
-            onValueChange = downloadFolderChanged,
+            value = userInputState.downloadFolder,
+            onValueChange = { userInputState.downloadFolder = it },
             placeholder = { Text("None") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -36,10 +32,10 @@ fun Inputs(
     Column(
         modifier = Modifier.padding(start = 10.dp, end = 10.dp)
     ) {
-        Text("URL")
+        Text("URL of Video")
         TextField(
-            value = url,
-            onValueChange = urlChanged,
+            value = userInputState.videoUrl,
+            onValueChange = { userInputState.videoUrl = it },
             placeholder = { Text("None") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()

@@ -1,4 +1,4 @@
-package com.retheviper.youtube_downloader.view
+package com.retheviper.youtube_downloader.view.download.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,28 +9,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.retheviper.youtube_downloader.view.state.DownloadOptionState
 
 @Composable
-fun DownloadOptions(
-    noPlaylist: Boolean,
-    noPlaylistChanged: (Boolean) -> Unit,
-    audioOnly: Boolean,
-    audioOnlyChanged: (Boolean) -> Unit
-) {
+fun Options(downloadOptionState: DownloadOptionState) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("No playlist")
         Checkbox(
-            checked = noPlaylist,
-            onCheckedChange = noPlaylistChanged
+            checked = downloadOptionState.noPlaylist,
+            onCheckedChange = { downloadOptionState.noPlaylist = it }
         )
 
         Text("Audio only")
         Checkbox(
-            checked = audioOnly,
-            onCheckedChange = audioOnlyChanged
+            checked = downloadOptionState.audioOnly,
+            onCheckedChange = { downloadOptionState.audioOnly = it }
         )
     }
 }

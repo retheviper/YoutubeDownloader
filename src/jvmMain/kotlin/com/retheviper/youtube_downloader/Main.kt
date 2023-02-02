@@ -8,20 +8,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.retheviper.youtube_downloader.view.convert.ConvertSection
 import com.retheviper.youtube_downloader.view.download.DownloadSection
-import com.retheviper.youtube_downloader.view.state.rememberDownloadOptionState
+import com.retheviper.youtube_downloader.view.state.rememberApplicationState
 
 @Composable
 @Preview
 fun App() {
-    // Download Options
-    val downloadOptionState = rememberDownloadOptionState()
+    val applicationState = rememberApplicationState()
 
     MaterialTheme {
         Column {
-            DownloadSection(downloadOptionState)
-            ConvertSection(downloadOptionState)
+            DownloadSection(applicationState)
         }
     }
 }

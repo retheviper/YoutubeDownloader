@@ -7,8 +7,7 @@ import androidx.compose.runtime.remember
 
 class DownloadOptionState(
     private val _noPlaylist: MutableState<Boolean>,
-    private val _audioOnly: MutableState<Boolean>,
-    private val _autoConvert: MutableState<Boolean>
+    private val _audioOnly: MutableState<Boolean>
 ) {
     var noPlaylist: Boolean
         get() = _noPlaylist.value
@@ -21,18 +20,11 @@ class DownloadOptionState(
         set(value) {
             _audioOnly.value = value
         }
-
-    var autoConvert: Boolean
-        get() = _autoConvert.value
-        set(value) {
-            _autoConvert.value = value
-        }
 }
 
 @Composable
 fun rememberDownloadOptionState(
     noPlaylist: MutableState<Boolean> = mutableStateOf(true),
-    audioOnly: MutableState<Boolean> = mutableStateOf(false),
-    autoConvert: MutableState<Boolean> = mutableStateOf(false)
+    audioOnly: MutableState<Boolean> = mutableStateOf(false)
 ): DownloadOptionState =
-    remember(noPlaylist, audioOnly, autoConvert) { DownloadOptionState(noPlaylist, audioOnly, autoConvert) }
+    remember(noPlaylist, audioOnly) { DownloadOptionState(noPlaylist, audioOnly) }

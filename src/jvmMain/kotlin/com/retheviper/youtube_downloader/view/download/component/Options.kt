@@ -9,24 +9,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.retheviper.youtube_downloader.view.state.DownloadOptionState
+import com.retheviper.youtube_downloader.view.state.ApplicationState
 
 @Composable
-fun Options(downloadOptionState: DownloadOptionState) {
+fun Options(applicationState: ApplicationState) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(start = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("No playlist")
         Checkbox(
-            checked = downloadOptionState.noPlaylist,
-            onCheckedChange = { downloadOptionState.noPlaylist = it }
+            checked = applicationState.downloadOption.noPlaylist,
+            onCheckedChange = { applicationState.downloadOption.noPlaylist = it }
         )
 
         Text("Audio only")
         Checkbox(
-            checked = downloadOptionState.audioOnly,
-            onCheckedChange = { downloadOptionState.audioOnly = it }
+            checked = applicationState.downloadOption.audioOnly,
+            onCheckedChange = { applicationState.downloadOption.audioOnly = it }
         )
     }
 }

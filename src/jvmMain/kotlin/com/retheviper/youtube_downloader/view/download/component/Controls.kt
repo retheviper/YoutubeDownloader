@@ -17,17 +17,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.retheviper.youtube_downloader.common.fileNameWithoutExtension
+import com.retheviper.youtube_downloader.view.state.ApplicationState
 import com.retheviper.youtube_downloader.view.state.DownloadOptionState
 import com.retheviper.youtube_downloader.view.state.UserInputState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.util.UUID
 
 @Composable
-fun Controls(
-    userInputState: UserInputState,
-    downloadOptionState: DownloadOptionState
-) {
+fun Controls(applicationState: ApplicationState) {
     val coroutineScope = rememberCoroutineScope()
     var process: Process? = null
     var processMessage by remember { mutableStateOf("") }
@@ -38,27 +41,53 @@ fun Controls(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End
     ) {
-        Text(if (isDownloading) "Downloading..." else "Ready")
-
-        Spacer(modifier = Modifier.width(10.dp))
-
         Button(
-            enabled = !isDownloading && userInputState.videoUrl.isNotEmpty(),
+            enabled = !isDownloading && applicationState.userInput.videoUrl.isNotEmpty(),
             onClick = {
                 coroutineScope.launch {
                     withContext(Dispatchers.IO) {
+                        if (fileExists(
+                                downloadOption = applicationState.downloadOption,
+                                userInput = applicationState.userInput
+                            )
+                        ) {
+                            processMessage = "File already exists."
+                            return@withContext
+                        }
+
                         isDownloading = true
+
+                        val uuid = UUID.randomUUID().toString()
+
                         process = download(
-                            downloadFolder = userInputState.downloadFolder,
-                            audioOnly = downloadOptionState.audioOnly,
-                            noPlaylist = downloadOptionState.noPlaylist,
-                            videoUrl = userInputState.videoUrl
+                            downloadOption = applicationState.downloadOption,
+                            userInput = applicationState.userInput,
+                            uuid = uuid
                         )
 
                         process?.inputStream?.bufferedReader()?.use { reader ->
                             reader.lines().forEach { stdout ->
                                 processMessage = stdout
                             }
+                        }
+
+                        if (process?.errorStream?.available() != 0) {
+                            try {
+                                convert(
+                                    downloadOption = applicationState.downloadOption,
+                                    userInput = applicationState.userInput,
+                                    uuid = uuid
+                                )
+                            } catch (e: Exception) {
+                                processMessage = e.message ?: "Unknown error with Convert."
+
+                            }
+                            removeUUID(applicationState.userInput.downloadFolder, uuid)
+                            processMessage = "Download completed."
+                            process?.errorStream?.close()
+                        } else {
+                            removeUUID(applicationState.userInput.downloadFolder, uuid)
+                            processMessage = "Download completed."
                         }
 
                         try {
@@ -85,8 +114,6 @@ fun Controls(
         ) {
             Text("Stop")
         }
-
-        // TODO add convert button
     }
 
     Text(
@@ -95,18 +122,45 @@ fun Controls(
     )
 }
 
-fun download(downloadFolder: String, audioOnly: Boolean, noPlaylist: Boolean, videoUrl: String): Process {
-    val brewPath = System.getenv("HOMEBREW_PREFIX") ?: when {
+fun getBrewPath(): String {
+    return System.getenv("HOMEBREW_PREFIX") ?: when {
         System.getProperty("os.arch").contains("x86") -> "/usr/local"
         else -> "/opt/homebrew"
     }
+}
 
+fun fileExists(downloadOption: DownloadOptionState, userInput: UserInputState): Boolean {
     val command = buildList {
-        add("$brewPath/bin/yt-dlp")
+        add("${getBrewPath()}/bin/yt-dlp")
+        add("--print")
+        add("title")
+        add(userInput.videoUrl)
+    }
+
+    val process = ProcessBuilder(command).start()
+
+    val title = process.inputStream.bufferedReader().use {
+        it.lines().findFirst().get()
+    }
+
+    process.waitFor()
+
+    val fileName = if (downloadOption.audioOnly) {
+        "${userInput.downloadFolder}/${title}.mp3"
+    } else {
+        "${userInput.downloadFolder}/${title}.mp4"
+    }
+
+    return Files.exists(Path.of(fileName))
+}
+
+fun download(downloadOption: DownloadOptionState, userInput: UserInputState, uuid: String): Process {
+    val command = buildList {
+        add("${getBrewPath()}/bin/yt-dlp")
         add("-o")
-        add("${downloadFolder}/%(title)s.%(ext)s")
+        add("${userInput.downloadFolder}/${uuid}%(title)s.%(ext)s")
         add("-f")
-        if (audioOnly) {
+        if (downloadOption.audioOnly) {
             add("bestaudio")
             add("--extract-audio")
             add("--audio-format")
@@ -118,9 +172,65 @@ fun download(downloadFolder: String, audioOnly: Boolean, noPlaylist: Boolean, vi
             add("-S")
             add("vcodec:h264")
         }
-        if (noPlaylist) add("--no-playlist")
-        add(videoUrl)
+        if (downloadOption.noPlaylist) add("--no-playlist")
+        add(userInput.videoUrl)
     }
 
-    return ProcessBuilder(command).start()
+    return ProcessBuilder(command)
+        .start()
+}
+
+fun convert(downloadOption: DownloadOptionState, userInput: UserInputState, uuid: String) {
+    val files = Files.walk(Path.of(userInput.downloadFolder))
+        .filter { it.fileName.toString().contains(uuid) }
+        .toList()
+
+    if (files.isEmpty()) return
+
+    val command = buildList {
+        add("${getBrewPath()}/bin/ffmpeg")
+        if (downloadOption.audioOnly) {
+            add("acodec")
+            add("libmp3lame")
+            add("${userInput.downloadFolder}/${files.first().fileNameWithoutExtension.replace(uuid, "")}.mp3")
+            return@buildList
+        } else {
+            val video = files.find { it.fileName.toString().contains(".mp4") }
+            val audio = files.find { it.fileName.toString().contains(".m4a") }
+            add("-i")
+            add(video.toString())
+            add("-i")
+            add(audio.toString())
+            add("-c:v")
+            add("copy")
+            add("-c:a")
+            add("copy")
+            add("${userInput.downloadFolder}/${video?.fileNameWithoutExtension?.replace(uuid, "")}.mp4")
+        }
+    }
+
+    val process = ProcessBuilder(command)
+        .start()
+
+    if (process.errorStream.available() != 0) {
+        process.errorStream.close()
+        throw RuntimeException("Failed to convert file.")
+    }
+}
+
+fun removeUUID(downloadFolder: String, uuid: String) {
+    Files.walk(Path.of(downloadFolder))
+        .filter { it.fileName.toString().contains(uuid) }
+        .forEach {
+            Files.move(
+                it,
+                Path.of(
+                    downloadFolder,
+                    it.fileName.toString()
+                        .replace(uuid, "")
+                        .replace(Regex("f\\d{3}."), "")
+                ),
+                StandardCopyOption.REPLACE_EXISTING
+            )
+        }
 }

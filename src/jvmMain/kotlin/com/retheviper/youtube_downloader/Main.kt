@@ -28,7 +28,7 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "YouTube Downloader",
         resizable = true,
-        state = rememberWindowState(width = 400.dp, height = 380.dp)
+        state = rememberWindowState(width = 600.dp, height = 380.dp)
     ) {
         window.minimumSize = window.size
         App()

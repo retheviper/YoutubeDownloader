@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 
 class ApplicationState(
     val downloadOption: DownloadOptionState,
-    val userInput: UserInputState
+    val userInput: UserInputState,
 )
 
 @Composable

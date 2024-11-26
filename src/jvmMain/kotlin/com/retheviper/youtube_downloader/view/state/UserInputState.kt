@@ -7,8 +7,7 @@ import androidx.compose.runtime.remember
 
 class UserInputState(
     private val _downloadFolder: MutableState<String>,
-    private val _videoUrl: MutableState<String>,
-    private val _videoQueue: MutableState<ArrayDeque<String>>
+    private val _videoUrl: MutableState<String>
 ) {
     var downloadFolder: String
         get() = _downloadFolder.value
@@ -21,27 +20,11 @@ class UserInputState(
         set(value) {
             _videoUrl.value = value
         }
-
-    val videoQueue: ArrayDeque<String>
-        get() = _videoQueue.value
-
-    fun addVideoQueue(video: String) {
-        _videoQueue.value.add(video)
-    }
-
-    fun getFirstVideoQueue(): String {
-        return _videoQueue.value.first()
-    }
-
-    fun removeFirstVideoQueue() {
-        _videoQueue.value.removeFirst()
-    }
 }
 
 @Composable
 fun rememberUserInputState(
     downloadFolder: MutableState<String> = mutableStateOf("${System.getProperty("user.home")}/Downloads"),
-    videoUrl: MutableState<String> = mutableStateOf(""),
-    videoQueue: MutableState<ArrayDeque<String>> = mutableStateOf(ArrayDeque())
+    videoUrl: MutableState<String> = mutableStateOf("")
 ): UserInputState =
-    remember(downloadFolder, videoUrl, videoQueue) { UserInputState(downloadFolder, videoUrl, videoQueue) }
+    remember(downloadFolder, videoUrl) { UserInputState(downloadFolder, videoUrl) }

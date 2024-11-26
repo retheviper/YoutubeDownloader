@@ -1,10 +1,15 @@
 package com.retheviper.youtube_downloader.service
 
+import kotlin.io.path.absolutePathString
+
 object SystemService {
-    fun getBrewPath(): String {
-        return System.getenv("HOMEBREW_PREFIX") ?: when {
-            System.getProperty("os.arch").contains("x86") -> "/usr/local"
-            else -> "/opt/homebrew"
-        }
+    private const val PATH = "/binaries"
+
+    val ffmpegPath: String by lazy {
+        BinaryBundleService.getBinaryBundle("$PATH/ffmpeg").absolutePathString()
+    }
+
+    val ytDlpPath: String by lazy {
+        BinaryBundleService.getBinaryBundle("$PATH/yt-dlp").absolutePathString()
     }
 }

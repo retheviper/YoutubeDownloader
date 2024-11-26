@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A simple GUI application to download youtube videos (Mac only)
+A simple GUI application to download youtube videos (arm Mac only)
 
 ## Screenshot
 
@@ -10,9 +10,7 @@ A simple GUI application to download youtube videos (Mac only)
 
 ## Requirements
 
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) installed via [homebrew](https://github.com/Homebrew/brew)
-- [ffmpeg](https://github.com/FFmpeg/FFmpeg) installed via [homebrew](https://github.com/Homebrew/brew)
-- Java 17
+- Java 21
 
 ## Run
 

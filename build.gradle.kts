@@ -29,6 +29,31 @@ kotlin {
     }
 }
 
+tasks {
+    register<Copy>("bundleBinaries") {
+        val from = "src/jvmMain/resources/binaries"
+
+        val ffmpegSource = "$from/ffmpeg"
+        val target = layout.projectDirectory.dir(from)
+
+        from(ffmpegSource)
+        into(target)
+
+        val ytDlpSource = "$path/yt-dlp"
+
+        from(ytDlpSource)
+        into(target)
+
+        onlyIf {
+            gradle.startParameter.taskNames.none { it == "run" }
+        }
+    }
+
+    named("processResources") {
+        dependsOn("bundleBinaries")
+    }
+}
+
 compose.desktop {
     application {
         mainClass = "com.retheviper.youtube_downloader.MainKt"
